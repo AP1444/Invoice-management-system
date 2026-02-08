@@ -1,6 +1,6 @@
 # My Thought Process
 
-This document explains the decisions I made while building this project and why I chose certain approaches over others.
+I used Single Dashboard Page layout rather than creating multiple pages for different tasks/views.
 
 ## Why a Single Dashboard Page?
 
