@@ -6,7 +6,7 @@ Hey! This is an invoice management app I built for tracking invoices. It's a ful
 
 | Layer | Tech |
 |-------|------|
-| Frontend | React 18, React Router, Axios, Vite |
+| Frontend | React 18, React Router, Axios, Vite, Tailwind CSS |
 | Backend | Node.js, Express.js |
 | Database | MySQL with Prisma ORM |
 | Auth | JWT tokens + bcrypt for password hashing |
@@ -23,9 +23,9 @@ Hey! This is an invoice management app I built for tracking invoices. It's a ful
 ├── frontend/
 │   └── src/
 │       ├── api/         # Axios configuration
-│       ├── components/  # Reusable components
+│       ├── components/  # Layout, ProtectedRoute
 │       ├── context/     # Auth state management
-│       └── pages/       # Login and Dashboard
+│       └── pages/       # Login, Dashboard, Invoices, InvoiceForm
 └── README.md
 ```
 
@@ -69,6 +69,16 @@ Go to http://localhost:5173 and login with:
 - **Email:** admin@example.com
 - **Password:** password123
 
+## Pages
+
+| Route | Page | Description |
+|-------|------|-------------|
+| `/login` | Login | Authentication with gradient background |
+| `/dashboard` | Dashboard | Stats overview + recent invoices |
+| `/invoices` | Invoices | Full list with search/filter capabilities |
+| `/invoices/new` | Create Invoice | Form to create new invoice |
+| `/invoices/:id/edit` | Edit Invoice | Form to update existing invoice |
+
 ## What It Does
 
 - **Authentication** - Login/logout with JWT tokens
@@ -84,6 +94,7 @@ Go to http://localhost:5173 and login with:
 | POST | /api/auth/login | Login and get token |
 | GET | /api/auth/me | Get logged in user |
 | GET | /api/invoices | List all invoices (supports filters) |
+| GET | /api/invoices/:id | Get single invoice |
 | POST | /api/invoices | Create new invoice |
 | PUT | /api/invoices/:id | Update an invoice |
 | DELETE | /api/invoices/:id | Delete an invoice |

@@ -1,21 +1,32 @@
 # My Thought Process
 
-I used Single Dashboard Page layout rather than creating multiple pages for different tasks/views.
+## Why Separate Pages Instead of a Single Dashboard?
 
-## Why a Single Dashboard Page?
+I restructured the app from a single Dashboard page to multiple dedicated pages:
 
-I considered making separate pages for listing invoices, creating invoices, and editing invoices. But that felt clunky - you'd have to navigate back and forth constantly.
+| Page | Purpose |
+|------|---------|
+| Dashboard | Quick stats overview and recent invoices |
+| Invoices | Full list with advanced filtering |
+| Invoice Form | Dedicated create/edit experience |
 
-Instead, I put everything on one Dashboard page with modals for create/edit. This way:
-- You can see your invoice list while adding a new one
-- Updates appear immediately without page refreshes
-- It just feels more like a modern app
+This separation gives each page a clear purpose and makes the app more navigable. The Dashboard provides a quick summary, while the Invoices page handles detailed management tasks.
 
-## Why Modals Instead of Separate Routes?
+## Why Full Pages Instead of Modals?
 
-For the create and edit forms, I used modals instead of navigating to `/invoices/new` or `/invoices/:id/edit`. 
+For create and edit forms, I switched from modals to dedicated routes (`/invoices/new`, `/invoices/:id/edit`). This approach:
+- Works better on mobile devices
+- Allows users to bookmark or share specific actions
+- Gives more space for the form without feeling cramped
+- Makes the back button work naturally
 
-Modals keep the user in context - they can still see the list behind the form. It also means less code since both create and edit use the same InvoiceForm component.
+## Why Tailwind CSS?
+
+I migrated from vanilla CSS to Tailwind because:
+- **Faster development** - Utility classes let me style without context switching
+- **Consistency** - Built-in design system with sensible defaults
+- **Smaller bundle** - Only used utilities are included in production
+- **Easier maintenance** - Styles live next to components, not in separate files
 
 ---
 

@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import api from '../api/axios';
+import Layout from '../components/Layout';
 
-function InvoiceForm({ invoice, onClose, onSave }) {
+function InvoiceForm() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const isEditing = !!id;
+
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     customerName: '',
@@ -11,12 +17,19 @@ function InvoiceForm({ invoice, onClose, onSave }) {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEditing);
   const [apiError, setApiError] = useState('');
 
-  const isEditing = !!invoice;
-
   useEffect(() => {
-    if (invoice) {
+    if (isEditing) {
+      fetchInvoice();
+    }
+  }, [id]);
+
+  const fetchInvoice = async () => {
+    try {
+      const response = await api.get(`/invoices/${id}`);
+      const invoice = response.data;
       setFormData({
         invoiceNumber: invoice.invoiceNumber || '',
         customerName: invoice.customerName || '',
@@ -24,25 +37,21 @@ function InvoiceForm({ invoice, onClose, onSave }) {
         invoiceDate: invoice.invoiceDate ? invoice.invoiceDate.split('T')[0] : '',
         status: invoice.status || 'Unpaid'
       });
+    } catch (error) {
+      setApiError('Failed to load invoice');
+    } finally {
+      setFetching(false);
     }
-  }, [invoice]);
+  };
 
   const validate = () => {
     const newErrors = {};
-
-    if (!formData.invoiceNumber.trim()) {
-      newErrors.invoiceNumber = 'Invoice number is required';
-    }
-    if (!formData.customerName.trim()) {
-      newErrors.customerName = 'Customer/Vendor name is required';
-    }
+    if (!formData.invoiceNumber.trim()) newErrors.invoiceNumber = 'Invoice number is required';
+    if (!formData.customerName.trim()) newErrors.customerName = 'Customer/Vendor name is required';
     if (!formData.amount || isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) < 0) {
       newErrors.amount = 'Valid amount is required';
     }
-    if (!formData.invoiceDate) {
-      newErrors.invoiceDate = 'Invoice date is required';
-    }
-
+    if (!formData.invoiceDate) newErrors.invoiceDate = 'Invoice date is required';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -50,28 +59,23 @@ function InvoiceForm({ invoice, onClose, onSave }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setApiError('');
-
     if (!validate()) return;
 
     setLoading(true);
     try {
       const data = { ...formData, amount: parseFloat(formData.amount) };
-
       if (isEditing) {
-        await api.put(`/invoices/${invoice.id}`, data);
+        await api.put(`/invoices/${id}`, data);
       } else {
         await api.post('/invoices', data);
       }
-
-      onSave();
+      navigate('/invoices');
     } catch (error) {
       setApiError(error.response?.data?.error || 'Failed to save invoice');
     } finally {
@@ -79,35 +83,46 @@ function InvoiceForm({ invoice, onClose, onSave }) {
     }
   };
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2 className="modal-title">{isEditing ? 'Edit Invoice' : 'Create Invoice'}</h2>
-          <button className="modal-close" onClick={onClose}>&times;</button>
+  if (fetching) {
+    return (
+      <Layout>
+        <div className="flex justify-center py-20">
+          <div className="spinner"></div>
         </div>
+      </Layout>
+    );
+  }
 
+  return (
+    <Layout>
+      <div className="mb-8 text-center">
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">{isEditing ? 'Edit Invoice' : 'Create Invoice'}</h1>
+        <p className="text-slate-500">{isEditing ? 'Update invoice details' : 'Fill in the details to create a new invoice'}</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm max-w-2xl mx-auto">
         <form onSubmit={handleSubmit}>
-          <div className="modal-body">
-            {apiError && <div className="login-error">{apiError}</div>}
+          <div className="p-6 space-y-5">
+            {apiError && (
+              <div className="bg-red-50 text-red-500 p-3 rounded-lg text-center text-sm">{apiError}</div>
+            )}
 
-            <div className="form-group">
-              <label className="form-label">Invoice Number *</label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice Number *</label>
               <input
                 type="text"
                 name="invoiceNumber"
                 value={formData.invoiceNumber}
                 onChange={handleChange}
-                className="form-input"
+                className={`form-input ${isEditing ? 'bg-slate-100 cursor-not-allowed' : ''}`}
                 placeholder="e.g., INV-001"
                 disabled={isEditing}
-                style={isEditing ? { backgroundColor: '#f1f5f9', cursor: 'not-allowed' } : {}}
               />
-              {errors.invoiceNumber && <p className="form-error">{errors.invoiceNumber}</p>}
+              {errors.invoiceNumber && <p className="text-red-500 text-xs mt-1">{errors.invoiceNumber}</p>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Customer/Vendor Name *</label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Customer/Vendor Name *</label>
               <input
                 type="text"
                 name="customerName"
@@ -116,11 +131,11 @@ function InvoiceForm({ invoice, onClose, onSave }) {
                 className="form-input"
                 placeholder="e.g., Acme Corporation"
               />
-              {errors.customerName && <p className="form-error">{errors.customerName}</p>}
+              {errors.customerName && <p className="text-red-500 text-xs mt-1">{errors.customerName}</p>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Amount *</label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Amount *</label>
               <input
                 type="number"
                 name="amount"
@@ -131,11 +146,11 @@ function InvoiceForm({ invoice, onClose, onSave }) {
                 step="0.01"
                 min="0"
               />
-              {errors.amount && <p className="form-error">{errors.amount}</p>}
+              {errors.amount && <p className="text-red-500 text-xs mt-1">{errors.amount}</p>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Invoice Date *</label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Invoice Date *</label>
               <input
                 type="date"
                 name="invoiceDate"
@@ -143,11 +158,11 @@ function InvoiceForm({ invoice, onClose, onSave }) {
                 onChange={handleChange}
                 className="form-input"
               />
-              {errors.invoiceDate && <p className="form-error">{errors.invoiceDate}</p>}
+              {errors.invoiceDate && <p className="text-red-500 text-xs mt-1">{errors.invoiceDate}</p>}
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Status</label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Status</label>
               <select
                 name="status"
                 value={formData.status}
@@ -160,15 +175,15 @@ function InvoiceForm({ invoice, onClose, onSave }) {
             </div>
           </div>
 
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
+          <div className="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+            <button type="button" className="btn btn-secondary" onClick={() => navigate('/invoices')}>Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Saving...' : (isEditing ? 'Update' : 'Create')}
+              {loading ? 'Saving...' : (isEditing ? 'Update Invoice' : 'Create Invoice')}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </Layout>
   );
 }
 

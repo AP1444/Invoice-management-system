@@ -32,16 +32,18 @@ function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
-        <h1 className="login-title">📋 Invoice Manager</h1>
-        <p className="login-subtitle">Sign in to manage your invoices</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-5">
+      <div className="bg-white rounded-xl p-10 w-full max-w-md shadow-xl">
+        <h1 className="text-2xl font-bold text-center text-slate-800 mb-2">📋 Invoice Manager</h1>
+        <p className="text-center text-slate-500 text-sm mb-8">Sign in to manage your invoices</p>
 
         <form onSubmit={handleSubmit}>
-          {error && <div className="login-error">{error}</div>}
+          {error && (
+            <div className="bg-red-50 text-red-500 p-3 rounded-lg text-center text-sm mb-5">{error}</div>
+          )}
 
-          <div className="form-group">
-            <label className="form-label">Email</label>
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
             <input
               type="email"
               className="form-input"
@@ -52,8 +54,8 @@ function Login() {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Password</label>
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
             <input
               type="password"
               className="form-input"
@@ -64,12 +66,12 @@ function Login() {
             />
           </div>
 
-          <button type="submit" className="btn btn-primary login-btn" disabled={loading}>
+          <button type="submit" className="btn btn-primary w-full py-3 text-base" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '0.875rem', color: '#64748b' }}>
+        <p className="mt-6 text-center text-xs text-slate-400">
           Demo: admin@example.com / password123
         </p>
       </div>
